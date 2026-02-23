@@ -40,10 +40,54 @@ export function LocationForm() {
     },
   });
 
+  const generateRentalRef = () => {
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let ref = "LOC-";
+    for (let i = 0; i < 8; i++) ref += chars[Math.floor(Math.random() * chars.length)];
+    return ref;
+  };
+
+  const durationToLabel: Record<string, string> = {
+    "half-day": "Demi-journée (4h)",
+    "full-day": "Journée (8h)",
+    week: "Semaine",
+    custom: "Sur mesure",
+  };
+
+  const getEndDate = (startDate: string, duration: string) => {
+    const start = new Date(startDate + "T12:00:00");
+    if (duration === "week") {
+      start.setDate(start.getDate() + 7);
+    }
+    return start.toISOString().split("T")[0];
+  };
+
   const onSubmit = async (data: LocationFormData) => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 800));
-    
+    const vehicleLabel = durationToLabel[data.type] ?? data.type;
+    const period = data.duration;
+    const endDate = getEndDate(data.startDate, data.type);
+
+    try {
+      await fetch("/api/rentals", {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          booking_ref: generateRentalRef(),
+          vehicle_label: vehicleLabel,
+          period,
+          start_date: data.startDate,
+          end_date: endDate,
+          pickup_address: data.pickup,
+          total_amount: 0,
+        }),
+      });
+    } catch {
+      // Continue même si l'enregistrement échoue (ex. non connecté)
+    }
+
+    await new Promise((r) => setTimeout(r, 400));
     const params = new URLSearchParams({
       type: data.type,
       date: data.startDate,

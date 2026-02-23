@@ -11,7 +11,9 @@ export const APP_DESCRIPTION =
  * Business constants
  */
 export const CONTACT = {
-  phone: "+221 77 82 23 493",
+  /** Numéro au format E.164 pour tel: et wa.me */
+  phone: "+221778223493",
+  /** Affichage avec espacement XX XXX XX XX (utiliser formatPhone(CONTACT.phone)) */
   email: "contact@scodvtc.com",
   support: "support@scodvtc.com",
   address: "Dakar, Sénégal",

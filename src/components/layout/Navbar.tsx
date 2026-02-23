@@ -18,6 +18,7 @@ import {
   UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { createClient } from "@/lib/supabase/client";
 
 interface NavLink {
   label: string;
@@ -183,7 +184,7 @@ function DesktopNavItem({ item }: { item: NavItem }) {
   );
 }
 
-function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+function MobileMenu({ isOpen, onClose, hasSession }: { isOpen: boolean; onClose: () => void; hasSession: boolean }) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = "hidden";
@@ -306,12 +307,12 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
                   Assistance
                 </Link>
                 <Link
-                  href="/connexion"
+                  href={hasSession ? "/mon-compte" : "/connexion"}
                   onClick={onClose}
                   className="text-body block transition-colors hover:text-accent"
                   style={{ fontWeight: "var(--weight-medium)", color: "var(--color-text-secondary)" }}
                 >
-                  Se connecter
+                  {hasSession ? "Dashboard" : "Se connecter"}
                 </Link>
               </div>
             </div>
@@ -325,6 +326,7 @@ function MobileMenu({ isOpen, onClose }: { isOpen: boolean; onClose: () => void 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [hasSession, setHasSession] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -333,6 +335,17 @@ export default function Navbar() {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const supabase = createClient();
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setHasSession(!!session);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setHasSession(!!session);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   return (
@@ -378,11 +391,11 @@ export default function Navbar() {
                 Assistance
               </Link>
               <Link
-                href="/connexion"
+                href={hasSession ? "/mon-compte" : "/connexion"}
                 className="text-body transition-colors duration-200 hover:text-accent"
                 style={{ fontWeight: "var(--weight-medium)", color: "var(--color-text-secondary)" }}
               >
-                Se connecter
+                {hasSession ? "Dashboard" : "Se connecter"}
               </Link>
               <Link
                 href="/reservation"
@@ -408,6 +421,7 @@ export default function Navbar() {
       <MobileMenu
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
+        hasSession={hasSession}
       />
     </>
   );

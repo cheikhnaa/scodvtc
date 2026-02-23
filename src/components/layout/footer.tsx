@@ -4,6 +4,7 @@ import * as React from "react";
 import Link from "next/link";
 import { Instagram, Facebook, Linkedin, Phone } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
 
 const footerLinks = {
   services: [
@@ -46,7 +47,7 @@ const socialLinks = [
   },
   {
     name: "WhatsApp",
-    href: "https://wa.me/221778223493",
+    href: `https://wa.me/${CONTACT.phone.replace(/\D/g, "")}`,
     icon: Phone,
   },
 ];

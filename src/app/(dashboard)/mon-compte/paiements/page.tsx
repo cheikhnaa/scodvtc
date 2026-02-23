@@ -34,21 +34,8 @@ interface Transaction {
    Mock data
 ───────────────────────────────────────────────────────── */
 
-const PAYMENT_METHODS: PaymentMethod[] = [
-  { id: "1", type: "wave",   label: "Wave",         masked: "****67",   isDefault: true  },
-  { id: "2", type: "orange", label: "Orange Money", masked: "****12",   isDefault: false },
-  { id: "3", type: "stripe", label: "Visa",         masked: "****4242", isDefault: false },
-];
-
-const TRANSACTIONS: Transaction[] = [
-  { id: "TX-001", date: "22 Fév 2026",  summary: "Plateau → AIBD",          amount: 45000, method: "wave",   status: "success" },
-  { id: "TX-002", date: "19 Fév 2026",  summary: "AIBD → Radisson Blu",     amount: 55000, method: "stripe", status: "success" },
-  { id: "TX-003", date: "15 Fév 2026",  summary: "Saly → Dakar",            amount: 62000, method: "orange", status: "success" },
-  { id: "TX-004", date: "10 Fév 2026",  summary: "Mermoz → AIBD",           amount: 45000, method: "wave",   status: "failed"  },
-  { id: "TX-005", date: "05 Fév 2026",  summary: "Almadies → CIS Dakar",    amount: 22000, method: "wave",   status: "success" },
-  { id: "TX-006", date: "28 Jan 2026",  summary: "AIBD → Hôtel Terrou-Bi",  amount: 48000, method: "stripe", status: "success" },
-  { id: "TX-007", date: "20 Jan 2026",  summary: "Plateau → Mermoz",        amount: 18000, method: "orange", status: "pending" },
-];
+const PAYMENT_METHODS: PaymentMethod[] = [];
+const TRANSACTIONS: Transaction[] = [];
 
 /* ─────────────────────────────────────────────────────────
    Method icons (SVG inline)
@@ -299,7 +286,7 @@ export default function PaiementsPage() {
         {[
           { label: "Total dépensé",     value: `${total.toLocaleString("fr-FR")} FCFA`, accent: true },
           { label: "Transactions",       value: `${TRANSACTIONS.filter((t) => t.status === "success").length} réussies` },
-          { label: "Moyen favori",       value: "Wave" },
+          { label: "Moyen favori",       value: methods[0]?.label ?? "—" },
         ].map(({ label, value, accent }) => (
           <div key={label} className="rounded-2xl border-2 border-grey-200 bg-white px-5 py-4">
             <p className="text-[12px] font-semibold uppercase tracking-wider text-grey-500">{label}</p>
@@ -387,8 +374,8 @@ export default function PaiementsPage() {
         </div>
 
         {/* Table header */}
-        <div className="hidden grid-cols-[1fr_2fr_auto_auto_auto] gap-4 border-b border-grey-100 px-6 py-2.5 sm:grid">
-          {["Date", "Trajet", "Montant", "Méthode", "Statut"].map((h) => (
+        <div className="hidden grid-cols-[1fr_2fr_auto_auto_auto_1fr] gap-4 border-b border-grey-100 px-6 py-2.5 sm:grid">
+          {["Date", "Trajet", "Montant", "Méthode", "Statut", "Reçu"].map((h) => (
             <span key={h} className="text-[11px] font-bold uppercase tracking-wider text-grey-400">
               {h}
             </span>
@@ -406,7 +393,7 @@ export default function PaiementsPage() {
                   layout
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="grid gap-2 px-6 py-4 sm:grid-cols-[1fr_2fr_auto_auto_auto] sm:items-center sm:gap-4"
+                  className="grid gap-2 px-6 py-4 sm:grid-cols-[1fr_2fr_auto_auto_auto_1fr] sm:items-center sm:gap-4"
                 >
                   <p className="text-[13px] text-grey-500">{tx.date}</p>
                   <p className="text-[14px] font-medium text-grey-900">{tx.summary}</p>
@@ -420,6 +407,34 @@ export default function PaiementsPage() {
                   <span className={cn("inline-block rounded-full px-2.5 py-0.5 text-[11px] font-bold", stCls)}>
                     {stLabel}
                   </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const w = window.open("", "_blank", "width=400,height=500");
+                      if (w) {
+                        w.document.write(`
+                          <!DOCTYPE html><html><head><title>Reçu ${tx.id}</title></head><body style="font-family:sans-serif;padding:24px;">
+                          <h1 style="color:#110E40">SCOD VTC</h1>
+                          <p style="color:#6b7280">Reçu · ${tx.id}</p>
+                          <hr/>
+                          <p><strong>Date :</strong> ${tx.date}</p>
+                          <p><strong>Trajet :</strong> ${tx.summary}</p>
+                          <p><strong>Montant :</strong> ${tx.amount.toLocaleString("fr-FR")} FCFA</p>
+                          <p><strong>Méthode :</strong> ${tx.method}</p>
+                          <p><strong>Statut :</strong> ${stLabel}</p>
+                          <hr/>
+                          <p style="font-size:12px;color:#9ca3af">Merci pour votre confiance.</p>
+                          </body></html>`);
+                        w.document.close();
+                        w.print();
+                        w.close();
+                      }
+                    }}
+                    className="flex items-center gap-1 rounded-lg px-2 py-1 text-[12px] font-medium text-accent hover:bg-accent/10"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    Reçu
+                  </button>
                 </motion.div>
               );
             })}

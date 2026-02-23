@@ -21,6 +21,7 @@ import {
   type VehicleClass,
   type PaymentMethodId,
 } from "@/components/booking/reservation-types";
+import { nominatimSearch } from "@/lib/nominatim";
 
 // ─── Haversine distance calculation ───────────────────────────────────────────
 
@@ -64,14 +65,14 @@ export default function ReservationClientPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Pré-remplir depuis /commander et décider de l’étape initiale (éviter de répéter le trajet)
+  // Pré-remplir depuis la page d'accueil / commander et décider de l'étape initiale
   const initial = React.useMemo(() => {
     const pickupAddr = searchParams.get("pickup");
     const dropoffAddr = searchParams.get("dropoff");
     const vehicle = searchParams.get("vehicle") as VehicleClass | null;
     const schedule = searchParams.get("schedule");
-    const date = searchParams.get("date");
-    const time = searchParams.get("time");
+    const dateParam = searchParams.get("date");
+    const timeParam = searchParams.get("time");
     const pickupLat = searchParams.get("pickup_lat");
     const pickupLng = searchParams.get("pickup_lng");
     const dropoffLat = searchParams.get("dropoff_lat");
@@ -90,7 +91,24 @@ export default function ReservationClientPage() {
         }
       : DEFAULT_RESERVATION.dropoff;
 
-    const isEarliest = schedule === "now" || !schedule;
+    // Normaliser la date (Hero envoie "today", "tomorrow" ou YYYY-MM-DD)
+    let date = dateParam || DEFAULT_RESERVATION.date;
+    if (dateParam === "today") {
+      date = new Date().toISOString().split("T")[0];
+    } else if (dateParam === "tomorrow") {
+      const d = new Date();
+      d.setDate(d.getDate() + 1);
+      date = d.toISOString().split("T")[0];
+    }
+
+    const time = timeParam || DEFAULT_RESERVATION.time;
+    const isEarliest = schedule === "now" || (!dateParam && !timeParam);
+
+    const fromCommander = searchParams.get("from_commander") === "1" && pickupAddr && dropoffAddr;
+    const fromHome = searchParams.get("from_home") === "1" && pickupAddr && dropoffAddr;
+    let startStep = 0;
+    if (fromHome) startStep = 2;
+    else if (fromCommander) startStep = 1;
 
     return {
       data: {
@@ -98,11 +116,11 @@ export default function ReservationClientPage() {
         pickup,
         dropoff,
         vehicleClass: vehicle || DEFAULT_RESERVATION.vehicleClass,
-        date: date || DEFAULT_RESERVATION.date,
-        time: time || DEFAULT_RESERVATION.time,
+        date,
+        time,
         isEarliest,
       } as ReservationData,
-      startStep: searchParams.get("from_commander") === "1" && pickupAddr && dropoffAddr ? 1 : 0,
+      startStep,
     };
   }, [searchParams]);
 
@@ -138,6 +156,36 @@ export default function ReservationClientPage() {
     data.dropoff.latitude,
     data.dropoff.longitude,
   ]);
+
+  // Géocoder les adresses venant de la page d'accueil (texte sans coordonnées) pour afficher la carte et la distance
+  React.useEffect(() => {
+    const needsPickupCoords = data.pickup.address && data.pickup.latitude == null;
+    const needsDropoffCoords = data.dropoff.address && data.dropoff.latitude == null;
+    if (!needsPickupCoords && !needsDropoffCoords) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const [pickupResults, dropoffResults] = await Promise.all([
+          needsPickupCoords ? nominatimSearch(data.pickup.address, { countryCodes: "sn", limit: 1 }) : [],
+          needsDropoffCoords ? nominatimSearch(data.dropoff.address, { countryCodes: "sn", limit: 1 }) : [],
+        ]);
+        if (cancelled) return;
+        const pickup = needsPickupCoords && pickupResults[0]
+          ? { ...data.pickup, latitude: Number(pickupResults[0].lat), longitude: Number(pickupResults[0].lon) }
+          : data.pickup;
+        const dropoff = needsDropoffCoords && dropoffResults[0]
+          ? { ...data.dropoff, latitude: Number(dropoffResults[0].lat), longitude: Number(dropoffResults[0].lon) }
+          : data.dropoff;
+        if ((needsPickupCoords && pickup.latitude != null) || (needsDropoffCoords && dropoff.latitude != null)) {
+          setData((d) => ({ ...d, pickup, dropoff }));
+        }
+      } catch {
+        // Ignorer les erreurs de géocodage (carte restera sans tracé)
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [data.pickup.address, data.dropoff.address]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -200,15 +248,49 @@ export default function ReservationClientPage() {
 
     setIsProcessing(true);
 
-    // Simulate payment processing
+    const ref = generateBookingRef();
+    const price = calculatePrice(
+      data.vehicleClass,
+      data.distanceKm,
+      data.time,
+      data.pickup.address,
+      data.dropoff.address
+    );
+
+    // 1. Enregistrer en base tout de suite (session = connectée) pour que la commande soit dans le tableau de bord
+    try {
+      const url = typeof window !== "undefined" ? `${window.location.origin}/api/bookings` : "/api/bookings";
+      const saveRes = await fetch(url, {
+        method: "POST",
+        credentials: "include",
+        mode: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          booking_ref: ref,
+          pickup_address: data.pickup.address,
+          dropoff_address: data.dropoff.address,
+          scheduled_date: data.date,
+          scheduled_time: data.time,
+          vehicle_class: data.vehicleClass,
+          total_amount: price.total,
+          deposit_amount: price.deposit,
+        }),
+      });
+      if (!saveRes.ok) {
+        const err = (await saveRes.json()) as { error?: string };
+        console.warn("[Réservation] Enregistrement tableau de bord:", err?.error ?? saveRes.status);
+      }
+    } catch (e) {
+      console.warn("[Réservation] Enregistrement tableau de bord:", e);
+    }
+
+    // 2. Simuler le paiement puis afficher le succès
     await new Promise((r) => setTimeout(r, 2000));
 
-    const ref = generateBookingRef();
     setBookingRef(ref);
     setIsSuccess(true);
     setIsProcessing(false);
 
-    // Scroll to top to show success screen
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 

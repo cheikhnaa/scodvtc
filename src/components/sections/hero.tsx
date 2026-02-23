@@ -64,10 +64,11 @@ export function Hero({ className }: { className?: string }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
-    if (departure) params.set("from", departure);
-    if (arrival) params.set("to", arrival);
+    if (departure) params.set("pickup", departure);
+    if (arrival) params.set("dropoff", arrival);
     if (date) params.set("date", date);
     if (time) params.set("time", time);
+    if (departure && arrival) params.set("from_home", "1");
     router.push(`/reservation?${params.toString()}`);
   };
 

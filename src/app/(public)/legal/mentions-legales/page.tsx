@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/LegalLayout";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Mentions Légales — SCOD VTC",
@@ -21,7 +23,7 @@ export default function MentionsLegalesPage() {
         <li><strong>Siège social :</strong> Dakar, Plateau, Sénégal</li>
         <li><strong>NINEA :</strong> 00X-XXXX-X (numéro d'identification nationale des entreprises et associations)</li>
         <li><strong>RCCM :</strong> SN-DKR-20XX-B-XXXXX (Registre du Commerce et du Crédit Mobilier)</li>
-        <li><strong>Téléphone :</strong> +221 77 82 23 493</li>
+        <li><strong>Téléphone :</strong> {formatPhoneWithCountry(CONTACT.phone)}</li>
         <li><strong>Email :</strong> <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a></li>
       </ul>
 
@@ -124,8 +126,8 @@ export default function MentionsLegalesPage() {
       <ul>
         <li><strong>Email général :</strong> <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a></li>
         <li><strong>Email DPO (données personnelles) :</strong> <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a></li>
-        <li><strong>Téléphone :</strong> +221 77 82 23 493</li>
-        <li><strong>WhatsApp :</strong> <a href="https://wa.me/221778223493" target="_blank" rel="noopener">wa.me/221778223493</a></li>
+        <li><strong>Téléphone :</strong> {formatPhoneWithCountry(CONTACT.phone)}</li>
+        <li><strong>WhatsApp :</strong> <a href={`https://wa.me/${CONTACT.phone.replace(/\D/g, "")}`} target="_blank" rel="noopener">{formatPhoneWithCountry(CONTACT.phone)}</a></li>
         <li><strong>Adresse :</strong> SCOD VTC, Dakar Plateau, Sénégal</li>
       </ul>
 

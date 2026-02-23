@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/LegalLayout";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Conditions Générales de Vente — SCOD VTC",
@@ -33,7 +35,7 @@ export default function CGVPage() {
       </p>
       <ul>
         <li>Via le site web <strong>scodvtc.sn</strong> — disponible 24h/24, 7j/7</li>
-        <li>Par téléphone au <strong>+221 77 82 23 493</strong></li>
+        <li>Par téléphone au <strong>{formatPhoneWithCountry(CONTACT.phone)}</strong></li>
         <li>Par WhatsApp au même numéro</li>
         <li>Par email à <strong>contact@scodvtc.com</strong></li>
       </ul>

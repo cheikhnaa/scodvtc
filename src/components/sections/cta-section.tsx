@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, useInView } from "framer-motion";
 import { ArrowRight, Phone, Shield, BadgeCheck, Clock, Star } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
 
 const badges = [
   { icon: BadgeCheck, label: "Tarif fixe garanti" },
@@ -101,7 +102,7 @@ export function CTASection({ className }: { className?: string }) {
               </Link>
 
               <a
-                href="tel:+221778223493"
+                href={`tel:${CONTACT.phone}`}
                 className={cn(
                   "inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-7 py-4",
                   "text-body-inverse",

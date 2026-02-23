@@ -1,8 +1,9 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle, MapPin, Calendar, Clock, Car, Download, MessageSquare } from "lucide-react";
+import { CheckCircle, MapPin, Calendar, Clock, Car, Download, MessageSquare, LayoutDashboard } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { fr } from "date-fns/locale";
 import { cn } from "@/lib/cn";
@@ -171,28 +172,47 @@ export function SuccessScreen({
           </div>
         </motion.div>
 
+        {/* Tableau de bord */}
+        <motion.div
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ delay: 0.45 }}
+          className="mt-8"
+        >
+          <Link
+            href="/mon-compte"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-accent bg-accent/10 px-6 py-4 font-sans text-base font-bold text-brand transition-all hover:bg-accent/20"
+          >
+            <LayoutDashboard className="h-5 w-5" />
+            Voir cette réservation dans mon tableau de bord
+          </Link>
+        </motion.div>
+
         {/* Action buttons */}
         <motion.div
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ delay: 0.5 }}
-          className="mt-8 flex flex-col gap-3 sm:flex-row"
+          className="mt-6 flex flex-col gap-3 sm:flex-row"
         >
           <button
             type="button"
+            onClick={() => window.print()}
             className="flex flex-1 items-center justify-center gap-2 rounded-btn bg-brand px-6 py-4 font-sans text-base font-bold text-white transition-all hover:bg-brand-hover hover:shadow-lg"
           >
             <Download className="h-5 w-5" />
             Télécharger le reçu
           </button>
 
-          <button
-            type="button"
+          <a
+            href={`https://wa.me/${driver.phone}`}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex flex-1 items-center justify-center gap-2 rounded-btn border-2 border-brand bg-white px-6 py-4 font-sans text-base font-bold text-brand transition-all hover:bg-brand/5"
           >
             <MessageSquare className="h-5 w-5" />
             Contacter le chauffeur
-          </button>
+          </a>
         </motion.div>
 
         {/* Next steps */}

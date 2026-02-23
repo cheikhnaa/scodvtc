@@ -16,6 +16,8 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 /* ─────────────────────────────────────────────────────────
    Types
@@ -102,7 +104,7 @@ const faqItems: FAQItem[] = [
         <div className="rounded-xl border border-grey-200 bg-grey-50 p-5">
           <p className="mb-2 font-semibold text-grey-900">Par téléphone / WhatsApp</p>
           <p className="text-[14px] text-grey-700">
-            Appelez le <span className="font-semibold text-brand">+221 77 82 23 493</span> ou
+            Appelez le <span className="font-semibold text-brand">{formatPhoneWithCountry(CONTACT.phone)}</span> ou
             envoyez un message WhatsApp. Un conseiller vous guidera en temps réel.
           </p>
         </div>
@@ -135,7 +137,7 @@ const faqItems: FAQItem[] = [
             <p className="text-amber-700">Modification sous réserve de disponibilité</p>
           </div>
         </div>
-        <Tip>Pour les urgences, appelez directement le +221 77 82 23 493. Notre équipe est disponible 7j/7 de 6h à 23h.</Tip>
+        <Tip>Pour les urgences, appelez directement le {formatPhoneWithCountry(CONTACT.phone)}. Notre équipe est disponible 7j/7 de 6h à 23h.</Tip>
       </div>
     ),
   },
@@ -813,11 +815,11 @@ export default function FAQPage() {
                       WhatsApp
                     </a>
                     <a
-                      href="tel:+221778223493"
+                      href={`tel:${CONTACT.phone}`}
                       className="flex items-center gap-3 rounded-xl border-2 border-grey-900 px-4 py-3 text-[13px] font-semibold text-grey-900 transition-all duration-200 hover:bg-grey-900 hover:text-white"
                     >
                       <Phone className="h-4 w-4" />
-                      +221 77 82 23 493
+                      {formatPhoneWithCountry(CONTACT.phone)}
                     </a>
                     <a
                       href="mailto:contact@scodvtc.com"

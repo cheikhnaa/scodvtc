@@ -12,6 +12,8 @@ import {
   ChevronDown, AlertCircle, CheckCircle2, ArrowRight, Send,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 /* ─────────────────────────────────────────────────────────
    Schema
@@ -35,22 +37,22 @@ const contactCards = [
   {
     icon: Phone,
     title: "Téléphone",
-    value: "+221 77 82 23 493",
+    value: formatPhoneWithCountry(CONTACT.phone),
     badge: "Réponse immédiate",
     badgeColor: "bg-green-500/15 text-green-400",
     cta: "Appeler",
-    href: "tel:+221778223493",
+    href: `tel:${CONTACT.phone}`,
     color: "text-blue-400",
     bg: "bg-blue-400/10",
   },
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "+221 77 82 23 493",
+    value: formatPhoneWithCountry(CONTACT.phone),
     badge: "Réponse < 5 min",
     badgeColor: "bg-green-500/15 text-green-400",
     cta: "Écrire sur WhatsApp",
-    href: "https://wa.me/221778223493",
+    href: `https://wa.me/${CONTACT.phone.replace(/\D/g, "")}`,
     color: "text-[#25D366]",
     bg: "bg-[#25D366]/10",
     external: true,
@@ -104,7 +106,7 @@ const quickFAQ = [
   {
     id: "q2",
     question: "Mon chauffeur est en retard, que faire ?",
-    answer: "Consultez votre SMS de confirmation pour le numéro direct du chauffeur. Vous pouvez aussi l'appeler via notre service client au +221 77 82 23 493.",
+    answer: `Consultez votre SMS de confirmation pour le numéro direct du chauffeur. Vous pouvez aussi l'appeler via notre service client au ${formatPhoneWithCountry(CONTACT.phone)}.`,
   },
   {
     id: "q3",

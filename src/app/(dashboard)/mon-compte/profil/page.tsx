@@ -1,12 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Camera, Plus, X, Home, Briefcase, Plane, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatPhone } from "@/lib/format";
+import { useDashboardUser } from "@/contexts/dashboard-user-context";
+import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
 
 /* ─────────────────────────────────────────────────────────
    Schema
@@ -108,31 +111,63 @@ function Section({ title, children }: { title: string; children: React.ReactNode
    Page
 ───────────────────────────────────────────────────────── */
 
+function splitFullName(fullName: string): { firstName: string; lastName: string } {
+  const parts = fullName.trim().split(/\s+/);
+  if (parts.length === 0) return { firstName: "", lastName: "" };
+  if (parts.length === 1) return { firstName: parts[0], lastName: "" };
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
 export default function ProfilPage() {
+  const { info } = useDashboardUser();
   const [favorites, setFavorites]     = useState<FavoriteAddress[]>(INITIAL_FAVORITES);
   const [newAddress, setNewAddress]   = useState("");
   const [addingAddr, setAddingAddr]   = useState(false);
   const [saved, setSaved]             = useState(false);
   const [waterOn, setWaterOn]         = useState(true);
-  const [initials]                    = useState("MS");
 
-  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } =
+  const { register, handleSubmit, setValue, watch, reset, formState: { errors, isSubmitting } } =
     useForm<ProfileData>({
       resolver: zodResolver(profileSchema),
       defaultValues: {
-        firstName:   "Moussa",
-        lastName:    "Sarr",
-        email:       "moussa.sarr@email.com",
+        firstName:   "",
+        lastName:    "",
+        email:       "",
         vehicle:     "berline",
         temperature: "normale",
         water:       true,
       },
     });
 
+  useEffect(() => {
+    if (!info) return;
+    const { firstName, lastName } = splitFullName(info.displayName);
+    reset({
+      firstName: firstName || undefined,
+      lastName:  lastName || undefined,
+      email:     info.email || "",
+      vehicle:   "berline",
+      temperature: "normale",
+      water:     true,
+    });
+  }, [info, reset]);
+
   const water = watch("water");
 
-  const onSave = async (_data: ProfileData) => {
-    await new Promise((r) => setTimeout(r, 900));
+  const onSave = async (data: ProfileData) => {
+    const fullName = [data.firstName, data.lastName].filter(Boolean).join(" ").trim();
+    if (isSupabaseConfigured() && fullName) {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({
+        data: { full_name: fullName },
+      });
+      if (error) {
+        return; // optional: setSaveError(error.message)
+      }
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 3000);
   };
@@ -168,7 +203,7 @@ export default function ProfilPage() {
           <div className="mb-6 flex items-center gap-5">
             <div className="relative">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-hover font-sans text-[24px] font-bold text-white shadow-lg">
-                {initials}
+                {info?.initials ?? "U"}
               </div>
               <button
                 type="button"
@@ -178,8 +213,10 @@ export default function ProfilPage() {
               </button>
             </div>
             <div>
-              <p className="font-semibold text-grey-900">Moussa Sarr</p>
-              <p className="text-[13px] text-grey-500">Membre depuis Janvier 2025</p>
+              <p className="font-semibold text-grey-900">{info?.displayName ?? "Utilisateur"}</p>
+              <p className="text-[13px] text-grey-500">
+                {info?.createdAt ? `Membre depuis ${info.createdAt}` : "Mon compte"}
+              </p>
               <p className="mt-1 text-[12px] font-medium text-green-600">✓ Compte vérifié</p>
             </div>
           </div>
@@ -211,8 +248,9 @@ export default function ProfilPage() {
                 </div>
                 <input
                   disabled
-                  value="77 82 23 493"
+                  value={info?.phone ? formatPhone(info.phone) : ""}
                   className={inputCls(false)}
+                  placeholder="—"
                 />
               </div>
             </div>

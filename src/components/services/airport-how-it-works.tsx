@@ -4,6 +4,8 @@ import * as React from "react";
 import { motion } from "framer-motion";
 import { FileText, Bell, MapPin, Car } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 interface Step {
   number: number;
@@ -163,14 +165,14 @@ export function AirportHowItWorks() {
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <a
-              href="tel:+221778223493"
+              href={`tel:${CONTACT.phone}`}
               className="font-sans text-base font-bold text-brand hover:underline"
             >
-              +221 77 82 23 493
+              {formatPhoneWithCountry(CONTACT.phone)}
             </a>
             <span className="text-grey-300">|</span>
             <a
-              href="https://wa.me/221778223493"
+              href={`https://wa.me/${CONTACT.phone.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
               className="font-sans text-base font-bold text-accent hover:underline"

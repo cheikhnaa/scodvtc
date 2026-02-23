@@ -70,6 +70,7 @@ export interface DriverInfo {
   trips: number;
   experience: string;
   languages: string[];
+  phone: string;
 }
 
 export const MOCK_DRIVERS: Record<VehicleClass, DriverInfo> = {
@@ -80,6 +81,7 @@ export const MOCK_DRIVERS: Record<VehicleClass, DriverInfo> = {
     trips: 1240,
     experience: "3 ans",
     languages: ["Wolof", "Français"],
+    phone: "221778223493",
   },
   premium: {
     name: "Ibrahima Sow",
@@ -88,6 +90,7 @@ export const MOCK_DRIVERS: Record<VehicleClass, DriverInfo> = {
     trips: 2100,
     experience: "5 ans",
     languages: ["Wolof", "Français", "Anglais"],
+    phone: "221778223493",
   },
   vip: {
     name: "Ousmane Ndiaye",
@@ -96,6 +99,7 @@ export const MOCK_DRIVERS: Record<VehicleClass, DriverInfo> = {
     trips: 890,
     experience: "7 ans",
     languages: ["Wolof", "Français", "Anglais", "Espagnol"],
+    phone: "221778223493",
   },
 };
 

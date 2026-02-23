@@ -10,6 +10,8 @@ import {
   CheckCircle2, Info, Smartphone,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 /* ─────────────────────────────────────────────────────────
    Primitives — style "Supplements"
@@ -116,7 +118,7 @@ const faqData: FAQItem[] = [
       <div className="space-y-3">
         <Block>
           <ItemRow icon={Laptop} label="En ligne — estimation immédiate" sub="Saisissez votre trajet sur scod-vtc.sn → tarif affiché en FCFA" />
-          <ItemRow icon={Phone} label="Par téléphone" sub="+221 77 82 23 493 — devis en moins de 2 minutes" />
+          <ItemRow icon={Phone} label="Par téléphone" sub={`${formatPhoneWithCountry(CONTACT.phone)} — devis en moins de 2 minutes`} />
           <ItemRow icon={MessageCircle} label="Via WhatsApp" sub="Envoyez départ + arrivée → tarif instantané" last />
         </Block>
         <Block>
@@ -351,7 +353,7 @@ export function ContactFAQ({ className }: { className?: string }) {
                 WhatsApp
               </a>
               <a
-                href="tel:+221778223493"
+                href={`tel:${CONTACT.phone}`}
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-xl border-2 border-grey-900 bg-transparent px-4 py-3",
                   "font-sans text-[14px] font-semibold text-grey-900 transition-all duration-200",

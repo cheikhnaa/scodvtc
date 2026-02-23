@@ -5,10 +5,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CalendarDays, User, CreditCard, LogOut,
+  LayoutDashboard, Car, CarFront, User, CreditCard, LogOut,
   Plus, Menu, X, ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { formatPhone } from "@/lib/format";
+import { DashboardUserProvider, useDashboardUser } from "@/contexts/dashboard-user-context";
 
 /* ─────────────────────────────────────────────────────────
    Nav items
@@ -16,9 +18,19 @@ import { cn } from "@/lib/cn";
 
 const NAV_ITEMS = [
   {
+    href:  "/mon-compte",
+    icon:  LayoutDashboard,
+    label: "Accueil",
+  },
+  {
     href:  "/mon-compte/reservations",
-    icon:  CalendarDays,
-    label: "Mes réservations",
+    icon:  Car,
+    label: "Mes trajets",
+  },
+  {
+    href:  "/mon-compte/locations",
+    icon:  CarFront,
+    label: "Mes locations",
   },
   {
     href:  "/mon-compte/profil",
@@ -33,22 +45,14 @@ const NAV_ITEMS = [
 ];
 
 /* ─────────────────────────────────────────────────────────
-   Mock user
-───────────────────────────────────────────────────────── */
-
-const MOCK_USER = {
-  firstName: "Moussa",
-  lastName:  "Sarr",
-  phone:     "+221 77 82 23 493",
-  initials:  "MS",
-};
-
-/* ─────────────────────────────────────────────────────────
    Sidebar content
 ───────────────────────────────────────────────────────── */
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const pathname = usePathname();
+  const { info, loading, signOut } = useDashboardUser();
+
+  const displayPhone = info?.phone ? formatPhone(info.phone) : null;
 
   return (
     <div className="flex h-full flex-col">
@@ -71,13 +75,21 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       <div className="border-b border-grey-100 px-6 py-5">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand to-brand-hover font-sans text-[16px] font-bold text-white shadow-md">
-            {MOCK_USER.initials}
+            {loading ? "…" : (info?.initials ?? "U")}
           </div>
-          <div className="min-w-0">
-            <p className="truncate font-sans text-[14px] font-semibold text-grey-900">
-              {MOCK_USER.firstName} {MOCK_USER.lastName}
-            </p>
-            <p className="truncate text-[12px] text-grey-500">{MOCK_USER.phone}</p>
+          <div className="min-w-0 flex-1">
+            {loading ? (
+              <div className="h-4 w-12 animate-pulse rounded bg-grey-200" />
+            ) : (
+              <p className="truncate font-sans text-[14px] font-semibold text-grey-900">
+                {info?.displayName ?? "Utilisateur"}
+              </p>
+            )}
+            {!loading && (displayPhone ?? info?.email) && (
+              <p className="truncate text-[12px] text-grey-500">
+                {displayPhone ?? info?.email}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -85,7 +97,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
       {/* Nav */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-          const active = pathname.startsWith(href);
+          const active = href === "/mon-compte" ? pathname === "/mon-compte" : pathname.startsWith(href);
           return (
             <Link
               key={href}
@@ -122,7 +134,11 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
 
       {/* Logout */}
       <div className="border-t border-grey-100 px-3 py-4">
-        <button className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-sans text-[14px] font-medium text-grey-500 transition-colors hover:bg-red-50 hover:text-red-600">
+        <button
+          type="button"
+          onClick={signOut}
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 font-sans text-[14px] font-medium text-grey-500 transition-colors hover:bg-red-50 hover:text-red-600"
+        >
           <LogOut className="h-4.5 w-4.5 shrink-0" />
           Déconnexion
         </button>
@@ -139,7 +155,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-grey-50">
+    <DashboardUserProvider requireAuth>
+      <div className="flex min-h-screen bg-grey-50">
 
       {/* ── Desktop sidebar ──────────────────────────── */}
       <aside className="hidden w-[280px] shrink-0 border-r border-grey-200 bg-white lg:flex lg:flex-col">
@@ -213,5 +230,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </main>
       </div>
     </div>
+    </DashboardUserProvider>
   );
 }

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { LegalLayout } from "@/components/layout/LegalLayout";
+import { CONTACT } from "@/lib/constants";
+import { formatPhoneWithCountry } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Politique de Confidentialité — SCOD VTC",
@@ -22,7 +24,7 @@ export default function ConfidentialitePage() {
         <strong>SCOD VTC</strong><br />
         Siège social : Dakar, Sénégal<br />
         Email DPO : <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a><br />
-        Téléphone : +221 77 82 23 493
+        Téléphone : {formatPhoneWithCountry(CONTACT.phone)}
       </p>
 
       <h2>2. Données collectées</h2>
