@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { MapPin, Circle, ArrowRight, Star, Check, Calendar, Plane, Shield, MapPinned } from "lucide-react";
+import { MapPin, Circle, ArrowRight, Star, Check, Calendar, Plane, Shield, MapPinned, Navigation, Loader2, Building2, Landmark } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { nominatimReverse } from "@/lib/nominatim";
 
 const fadeUp = (delay: number) => ({
   hidden: { opacity: 0, y: 20 },
@@ -25,12 +26,40 @@ const badges = [
   { icon: MapPinned, text: "Tout le Sénégal" },
 ];
 
+const QUICK_DESTINATIONS = [
+  { icon: Plane, label: "Aéroport AIBD", address: "Aéroport International Blaise Diagne, Diass, Sénégal" },
+  { icon: Building2, label: "Radisson Blu Dakar", address: "Radisson Blu Hotel Dakar Seaview, Dakar, Sénégal" },
+  { icon: Landmark, label: "Plateau Centre-ville", address: "Plateau, Dakar, Sénégal" },
+] as const;
+
 export function Hero({ className }: { className?: string }) {
   const router = useRouter();
   const [departure, setDeparture] = useState("");
   const [arrival, setArrival] = useState("");
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
+  const [isLocating, setIsLocating] = useState(false);
+
+  const handleMyLocation = useCallback(() => {
+    if (!navigator.geolocation) return;
+    setIsLocating(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        try {
+          const result = await nominatimReverse(lat, lng);
+          setDeparture(result?.display_name ?? "Position actuelle");
+        } catch {
+          setDeparture("Position actuelle");
+        } finally {
+          setIsLocating(false);
+        }
+      },
+      () => setIsLocating(false),
+      { timeout: 10000 }
+    );
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -141,21 +170,43 @@ export function Hero({ className }: { className?: string }) {
               </h2>
 
               <form onSubmit={handleSubmit} className="space-y-3">
-                {/* Departure */}
-                <div className="relative">
-                  <MapPin className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-accent" />
-                  <input
-                    type="text"
-                    placeholder="Adresse de départ"
-                    value={departure}
-                    onChange={(e) => setDeparture(e.target.value)}
+                {/* Departure + Ma position */}
+                <div className="relative flex items-center gap-2">
+                  <div className="relative flex-1 min-w-0">
+                    <MapPin className="absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-accent pointer-events-none" />
+                    <input
+                      type="text"
+                      placeholder="Adresse de départ"
+                      value={departure}
+                      onChange={(e) => setDeparture(e.target.value)}
+                      className={cn(
+                        "h-12 w-full rounded-xl border border-white/10 bg-white/5 pl-11 pr-4",
+                        "text-[15px] text-white placeholder:text-white/40",
+                        "outline-none transition-all duration-200",
+                        "focus:border-accent focus:bg-white/10 focus:ring-2 focus:ring-accent/20"
+                      )}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleMyLocation}
+                    disabled={isLocating}
                     className={cn(
-                      "h-12 w-full rounded-xl border border-white/10 bg-white/5 pl-11 pr-4",
-                      "text-[15px] text-white placeholder:text-white/40",
-                      "outline-none transition-all duration-200",
-                      "focus:border-accent focus:bg-white/10 focus:ring-2 focus:ring-accent/20"
+                      "flex h-12 shrink-0 items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3",
+                      "text-[13px] font-medium text-white/80 transition-all duration-200",
+                      "hover:border-accent/30 hover:bg-accent/10 hover:text-accent",
+                      "focus:outline-none focus:ring-2 focus:ring-accent/20 focus:ring-offset-2 focus:ring-offset-brand-dark",
+                      "disabled:opacity-50 disabled:cursor-not-allowed"
                     )}
-                  />
+                    title="Utiliser ma position actuelle"
+                  >
+                    {isLocating ? (
+                      <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
+                    ) : (
+                      <Navigation className="h-4 w-4 shrink-0" />
+                    )}
+                    <span className="hidden sm:inline">Ma position</span>
+                  </button>
                 </div>
 
                 {/* Arrival */}
@@ -173,6 +224,32 @@ export function Hero({ className }: { className?: string }) {
                       "focus:border-accent focus:bg-white/10 focus:ring-2 focus:ring-accent/20"
                     )}
                   />
+                </div>
+
+                {/* Destinations populaires */}
+                <div>
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-white/50">
+                    Destinations populaires
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {QUICK_DESTINATIONS.map((dest) => {
+                      const Icon = dest.icon;
+                      return (
+                        <button
+                          key={dest.label}
+                          type="button"
+                          onClick={() => setArrival(dest.address)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[13px] text-white/80",
+                            "transition-all duration-200 hover:border-accent/30 hover:bg-accent/10 hover:text-accent"
+                          )}
+                        >
+                          <Icon className="h-3.5 w-3.5 text-accent" />
+                          {dest.label}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 {/* Date & Time */}

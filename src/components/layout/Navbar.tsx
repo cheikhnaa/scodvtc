@@ -347,24 +347,26 @@ export default function Navbar() {
       >
         <div className="max-w-[1920px] mx-auto px-6 lg:px-[52px]">
           <div className="flex items-center justify-between h-[68px]">
-            {/* Logo */}
-            <Link href="/" className="flex items-center">
-              <Image
-                src="/cars/logo/logo-scod-vtc.png"
-                alt="SCOD VTC"
-                width={180}
-                height={48}
-                className="h-12 w-auto object-contain mix-blend-multiply"
-                priority
-              />
-            </Link>
+            {/* Logo + Navigation à gauche */}
+            <div className="flex items-center gap-8 lg:gap-10">
+              <Link href="/" className="flex items-center shrink-0">
+                <Image
+                  src="/cars/logo/logo-scod-vtc.png"
+                  alt="SCOD VTC"
+                  width={180}
+                  height={48}
+                  className="h-12 w-auto object-contain mix-blend-multiply"
+                  priority
+                />
+              </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden lg:flex items-center gap-8">
-              {navigationItems.map((item) => (
-                <DesktopNavItem key={item.label} item={item} />
-              ))}
-            </nav>
+              {/* Desktop Navigation */}
+              <nav className="hidden lg:flex items-center gap-8">
+                {navigationItems.map((item) => (
+                  <DesktopNavItem key={item.label} item={item} />
+                ))}
+              </nav>
+            </div>
 
             {/* Desktop Right Actions */}
             <div className="hidden lg:flex items-center gap-6">

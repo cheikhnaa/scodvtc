@@ -46,7 +46,7 @@ const MOCK_BOOKING: BookingData = {
     name:     "Seydou Diallo",
     initials: "SD",
     rating:   4.9,
-    phone:    "+221771234567",
+    phone:    "+221778223493",
     vehicle:  "BMW Série 5",
     plate:    "DK-1234-AA",
   },

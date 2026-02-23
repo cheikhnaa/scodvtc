@@ -211,7 +211,7 @@ export default function ProfilPage() {
                 </div>
                 <input
                   disabled
-                  value="77 123 45 67"
+                  value="77 82 23 493"
                   className={inputCls(false)}
                 />
               </div>

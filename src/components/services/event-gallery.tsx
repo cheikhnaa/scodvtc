@@ -40,7 +40,7 @@ const GALLERY_IMAGES = [
 export function EventGallery() {
   return (
     <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-      <div className="container px-6 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-6 lg:px-8">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <motion.p

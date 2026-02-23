@@ -68,7 +68,7 @@ export function EventQuoteForm() {
   if (isSuccess) {
     return (
       <section id="devis" className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand to-brand-hover py-20 lg:py-28">
-        <div className="container px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl px-6 lg:px-8">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -99,7 +99,7 @@ export function EventQuoteForm() {
         style={{ opacity: 0.025 }}
       />
 
-      <div className="container relative z-10 px-6 lg:px-8">
+      <div className="container relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           {/* Header */}
           <motion.div
@@ -359,7 +359,7 @@ export function EventQuoteForm() {
                       <input
                         type="tel"
                         {...field}
-                        placeholder="+221 77 123 45 67"
+                        placeholder="+221 77 82 23 493"
                         className={cn(
                           "h-[52px] w-full rounded-input border bg-white/10 px-4 font-sans text-base text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-4",
                           errors.phone

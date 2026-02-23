@@ -9,7 +9,6 @@ import {
   Shield,
   Plane,
   MessageSquare,
-  ChevronRight,
 } from "lucide-react";
 
 export function AirportHero() {
@@ -33,7 +32,7 @@ export function AirportHero() {
       </div>
 
       {/* Content */}
-      <div className="container relative z-10 px-6 py-20 lg:px-8">
+      <div className="container relative z-10 px-6 pt-28 pb-20 lg:px-8 lg:pt-36 lg:pb-20">
         <div className="max-w-3xl">
           {/* Badge */}
           <motion.div
@@ -113,7 +112,7 @@ export function AirportHero() {
             </Link>
 
             <a
-              href="https://wa.me/221771234567"
+              href="https://wa.me/221778223493"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-2 rounded-btn border-2 border-white/20 bg-white/5 px-8 py-4 text-cta text-white uppercase backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
@@ -125,25 +124,6 @@ export function AirportHero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1, duration: 0.8 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2"
-      >
-        <div className="flex flex-col items-center gap-2">
-          <span className="text-label-inverse">
-            Découvrir
-          </span>
-          <motion.div
-            animate={{ y: [0, 8, 0] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <ChevronRight className="h-5 w-5 rotate-90 text-accent" />
-          </motion.div>
-        </div>
-      </motion.div>
     </section>
   );
 }

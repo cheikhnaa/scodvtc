@@ -39,7 +39,7 @@ const OFFERS = [
 export function EntreprisesOffers() {
   return (
     <section id="offres" className="relative overflow-hidden bg-white py-20 lg:py-28">
-      <div className="container px-6 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-3xl text-center">
           <motion.p
             initial={{ opacity: 0, y: 20 }}

@@ -39,7 +39,7 @@ const NAV_ITEMS = [
 const MOCK_USER = {
   firstName: "Moussa",
   lastName:  "Sarr",
-  phone:     "+221 77 123 45 67",
+  phone:     "+221 77 82 23 493",
   initials:  "MS",
 };
 

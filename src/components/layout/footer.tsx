@@ -46,7 +46,7 @@ const socialLinks = [
   },
   {
     name: "WhatsApp",
-    href: "https://wa.me/221771234567",
+    href: "https://wa.me/221778223493",
     icon: Phone,
   },
 ];
@@ -69,7 +69,7 @@ export function Footer({ className }: FooterProps) {
 
   return (
     <footer className={cn("bg-[#0A0920] text-white", className)}>
-      <div className="container-custom py-12 lg:py-16">
+      <div className="mx-auto max-w-7xl px-5 py-12 sm:px-8 lg:px-12 lg:py-16">
         {/* Main Footer Content */}
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4 lg:gap-12">
           {/* Col 1 - Logo & Social */}

@@ -33,9 +33,9 @@ export default function CGVPage() {
       </p>
       <ul>
         <li>Via le site web <strong>scodvtc.sn</strong> — disponible 24h/24, 7j/7</li>
-        <li>Par téléphone au <strong>+221 77 123 45 67</strong></li>
+        <li>Par téléphone au <strong>+221 77 82 23 493</strong></li>
         <li>Par WhatsApp au même numéro</li>
-        <li>Par email à <strong>contact@scodvtc.sn</strong></li>
+        <li>Par email à <strong>contact@scodvtc.com</strong></li>
       </ul>
       <p>
         Toute réservation donne lieu à un <strong>accusé de réception par SMS</strong> contenant les
@@ -127,7 +127,7 @@ export default function CGVPage() {
       <p>
         Toute réclamation relative à une prestation doit être adressée dans un délai de{" "}
         <strong>30 jours</strong> suivant la course, par email à{" "}
-        <a href="mailto:contact@scodvtc.sn">contact@scodvtc.sn</a> ou via le formulaire de
+        <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a> ou via le formulaire de
         contact disponible sur <strong>/assistance</strong>.
       </p>
       <p>
@@ -155,7 +155,7 @@ export default function CGVPage() {
       <hr />
       <p className="text-[13px] text-grey-400">
         Pour toute question relative à ces CGV, contactez-nous à{" "}
-        <a href="mailto:contact@scodvtc.sn">contact@scodvtc.sn</a>.
+        <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a>.
       </p>
     </LegalLayout>
   );

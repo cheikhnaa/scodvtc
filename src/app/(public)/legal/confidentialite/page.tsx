@@ -21,8 +21,8 @@ export default function ConfidentialitePage() {
         Le responsable du traitement de vos données personnelles est :<br />
         <strong>SCOD VTC</strong><br />
         Siège social : Dakar, Sénégal<br />
-        Email DPO : <a href="mailto:privacy@scodvtc.sn">privacy@scodvtc.sn</a><br />
-        Téléphone : +221 77 123 45 67
+        Email DPO : <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a><br />
+        Téléphone : +221 77 82 23 493
       </p>
 
       <h2>2. Données collectées</h2>
@@ -163,7 +163,7 @@ export default function ConfidentialitePage() {
       </ul>
       <p>
         Pour exercer ces droits, contactez notre DPO à{" "}
-        <a href="mailto:privacy@scodvtc.sn">privacy@scodvtc.sn</a>. Nous répondons dans un délai
+        <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a>. Nous répondons dans un délai
         maximum de <strong>30 jours</strong>.
       </p>
 
@@ -190,7 +190,7 @@ export default function ConfidentialitePage() {
       <p>
         Pour toute question relative au traitement de vos données, contactez notre Délégué à la
         Protection des Données (DPO) :<br />
-        <strong>Email :</strong> <a href="mailto:privacy@scodvtc.sn">privacy@scodvtc.sn</a><br />
+        <strong>Email :</strong> <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a><br />
         <strong>Courrier :</strong> SCOD VTC — DPO, Dakar, Sénégal
       </p>
       <p>

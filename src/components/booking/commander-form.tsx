@@ -17,6 +17,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { nominatimReverse } from "@/lib/nominatim";
 import { AddressInput, type AddressValue } from "./address-input";
 import { VehicleSelector, type VehicleClass } from "./vehicle-selector";
 
@@ -204,42 +205,29 @@ export function CommanderForm({
     ]
   );
 
-  // Geolocation (vérifier que Google Maps est chargé avant d'utiliser le Geocoder)
+  // Géolocalisation + géocodage inverse (Nominatim / OpenStreetMap)
   const handleMyLocation = React.useCallback(() => {
     if (!navigator.geolocation) return;
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      async (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
-        if (typeof window !== "undefined" && window.google?.maps) {
-          const geocoder = new google.maps.Geocoder();
-          geocoder.geocode(
-            { location: { lat, lng } },
-            (
-              results: google.maps.GeocoderResult[] | null,
-              status: google.maps.GeocoderStatus
-            ) => {
-              setIsLocating(false);
-              if (status === "OK" && results?.[0]) {
-                setValue("pickup", {
-                  address: results[0].formatted_address,
-                  placeId: results[0].place_id,
-                  latitude: lat,
-                  longitude: lng,
-                });
-              }
-            }
-          );
-        } else {
-          // Fallback si l'API Google Maps n'est pas encore chargée : on enregistre la position
-          setIsLocating(false);
+        try {
+          const result = await nominatimReverse(lat, lng);
+          setValue("pickup", {
+            address: result?.display_name ?? "Position actuelle",
+            latitude: lat,
+            longitude: lng,
+          });
+        } catch {
           setValue("pickup", {
             address: "Position actuelle",
             latitude: lat,
             longitude: lng,
           });
+        } finally {
+          setIsLocating(false);
         }
       },
       () => setIsLocating(false),
@@ -256,19 +244,22 @@ export function CommanderForm({
     });
   };
 
-  // Submit
+  // Submit : redirection vers /reservation sur l’étape Date & heure en conservant trajet + infos
   const onSubmit = async (data: CommanderFormData) => {
     setIsSubmitting(true);
-    // Build query params for the next step (/reservation)
     const params = new URLSearchParams({
       pickup: data.pickup.address,
       dropoff: data.dropoff.address,
       vehicle: data.vehicleClass,
       schedule: data.schedule,
+      from_commander: "1", // pour ouvrir directement sur l’étape Date & heure
       ...(data.schedule === "later" && data.date ? { date: data.date } : {}),
       ...(data.schedule === "later" && data.time ? { time: data.time } : {}),
     });
-    // Simulate short delay for UX
+    if (data.pickup.latitude != null) params.set("pickup_lat", String(data.pickup.latitude));
+    if (data.pickup.longitude != null) params.set("pickup_lng", String(data.pickup.longitude));
+    if (data.dropoff.latitude != null) params.set("dropoff_lat", String(data.dropoff.latitude));
+    if (data.dropoff.longitude != null) params.set("dropoff_lng", String(data.dropoff.longitude));
     await new Promise((r) => setTimeout(r, 600));
     router.push(`/reservation?${params.toString()}`);
   };

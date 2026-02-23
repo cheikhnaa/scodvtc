@@ -101,7 +101,7 @@ export function CTASection({ className }: { className?: string }) {
               </Link>
 
               <a
-                href="tel:+221771234567"
+                href="tel:+221778223493"
                 className={cn(
                   "inline-flex items-center gap-2.5 rounded-xl border border-white/20 px-7 py-4",
                   "text-body-inverse",

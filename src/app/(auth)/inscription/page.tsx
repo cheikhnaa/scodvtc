@@ -7,8 +7,9 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, CheckCircle2, RefreshCw } from "lucide-react";
+import { ArrowLeft, CheckCircle2, RefreshCw, Eye, EyeOff } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { createClient } from "@/lib/supabase/client";
 
 /* ─────────────────────────────────────────────────────────
    Schemas
@@ -21,12 +22,19 @@ const phoneSchema = z.object({
     .regex(/^\d+$/, "Chiffres uniquement"),
 });
 
-const profileSchema = z.object({
-  firstName: z.string().min(2, "Requis"),
-  lastName:  z.string().min(2, "Requis"),
-  email:     z.string().email("Email invalide").or(z.literal("")),
-  terms:     z.literal(true, { errorMap: () => ({ message: "Veuillez accepter les CGV" }) }),
-});
+const profileSchema = z
+  .object({
+    firstName: z.string().min(2, "Requis"),
+    lastName:  z.string().min(2, "Requis"),
+    email:     z.string().email("Email invalide"),
+    password:  z.string().min(6, "Minimum 6 caractères"),
+    confirmPassword: z.string(),
+    terms:     z.literal(true, { errorMap: () => ({ message: "Veuillez accepter les CGV" }) }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Les mots de passe ne correspondent pas",
+    path: ["confirmPassword"],
+  });
 
 type PhoneData    = z.infer<typeof phoneSchema>;
 type ProfileData  = z.infer<typeof profileSchema>;
@@ -272,38 +280,101 @@ export default function InscriptionPage() {
   const [otpKey, setOtpKey]   = useState(0);
   const [otpError, setOtpError] = useState("");
   const [done, setDone]       = useState(false);
+  const [signUpError, setSignUpError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   /* Phone form */
   const phoneForm = useForm<PhoneData>({ resolver: zodResolver(phoneSchema) });
 
   const onSendOTP = async (data: PhoneData) => {
-    await new Promise((r) => setTimeout(r, 800));
-    setPhone(data.phone);
-    setStep(1);
+    setOtpError("");
+    const fullPhone = `+221${data.phone}`;
+    try {
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(json.error || "Impossible d’envoyer le code. Vérifiez le numéro ou réessayez.");
+        return;
+      }
+      setPhone(data.phone);
+      setStep(1);
+    } catch {
+      setOtpError("Erreur réseau. Réessayez.");
+    }
   };
 
   /* OTP verification */
   const onOTPComplete = async (code: string) => {
-    await new Promise((r) => setTimeout(r, 600));
-    if (code === "000000") {
-      setOtpError("Code incorrect. Vérifiez votre SMS.");
-      return;
-    }
     setOtpError("");
-    setStep(2);
+    const fullPhone = `+221${phone}`;
+    try {
+      const res = await fetch("/api/auth/otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone, code }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(json.error || "Code incorrect ou expiré. Réessayez.");
+        return;
+      }
+      setStep(2);
+    } catch {
+      setOtpError("Erreur réseau. Réessayez.");
+    }
   };
 
   /* Profile form */
   const profileForm = useForm<ProfileData>({ resolver: zodResolver(profileSchema) });
 
-  const onCreateAccount = async (_data: ProfileData) => {
-    await new Promise((r) => setTimeout(r, 1200));
+  const onCreateAccount = async (data: ProfileData) => {
+    setSignUpError(null);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signUp({
+      email: data.email,
+      password: data.password,
+      options: {
+        data: {
+          first_name: data.firstName,
+          last_name: data.lastName,
+          phone: phone ? `+221${phone}` : undefined,
+        },
+      },
+    });
+    if (error) {
+      if (error.message.includes("already registered") || error.code === "user_already_exists") {
+        setSignUpError("Un compte existe déjà avec cet email. Connectez-vous ou réinitialisez votre mot de passe.");
+      } else {
+        setSignUpError(error.message || "Erreur lors de la création du compte.");
+      }
+      return;
+    }
     setDone(true);
   };
 
-  const resendOTP = () => {
-    setOtpKey((k) => k + 1);
+  const resendOTP = async () => {
     setOtpError("");
+    if (!phone) return;
+    const fullPhone = `+221${phone}`;
+    try {
+      const res = await fetch("/api/auth/otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone: fullPhone }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setOtpError(json.error || "Impossible de renvoyer le code.");
+        return;
+      }
+      setOtpKey((k) => k + 1);
+    } catch {
+      setOtpError("Erreur réseau. Réessayez.");
+    }
   };
 
   if (done) {
@@ -390,6 +461,12 @@ export default function InscriptionPage() {
                         </p>
                       )}
                     </div>
+
+                    {otpError && step === 0 && (
+                      <p className="text-center text-[13px] text-red-500">
+                        {otpError}
+                      </p>
+                    )}
 
                     <motion.button
                       type="submit"
@@ -516,8 +593,7 @@ export default function InscriptionPage() {
 
                     <div>
                       <label className="mb-1.5 block text-[13px] font-semibold text-grey-700">
-                        Email{" "}
-                        <span className="font-normal text-grey-400">(optionnel)</span>
+                        Email *
                       </label>
                       <input
                         {...profileForm.register("email")}
@@ -531,6 +607,57 @@ export default function InscriptionPage() {
                         </p>
                       )}
                     </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-[13px] font-semibold text-grey-700">
+                        Mot de passe *
+                      </label>
+                      <div className="relative">
+                        <input
+                          {...profileForm.register("password")}
+                          type={showPassword ? "text" : "password"}
+                          placeholder="••••••••"
+                          className={inputCls(!!profileForm.formState.errors.password)}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword((v) => !v)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-grey-400 hover:text-grey-600"
+                          aria-label={showPassword ? "Masquer" : "Afficher"}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </button>
+                      </div>
+                      {profileForm.formState.errors.password && (
+                        <p className="mt-1 text-[12px] text-red-500">
+                          {profileForm.formState.errors.password.message}
+                        </p>
+                      )}
+                      <p className="mt-1 text-[11px] text-grey-400">Minimum 6 caractères</p>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-[13px] font-semibold text-grey-700">
+                        Confirmer le mot de passe *
+                      </label>
+                      <input
+                        {...profileForm.register("confirmPassword")}
+                        type="password"
+                        placeholder="••••••••"
+                        className={inputCls(!!profileForm.formState.errors.confirmPassword)}
+                      />
+                      {profileForm.formState.errors.confirmPassword && (
+                        <p className="mt-1 text-[12px] text-red-500">
+                          {profileForm.formState.errors.confirmPassword.message}
+                        </p>
+                      )}
+                    </div>
+
+                    {signUpError && (
+                      <p className="rounded-xl bg-red-50 px-4 py-3 text-[13px] text-red-600">
+                        {signUpError}
+                      </p>
+                    )}
 
                     {/* Terms */}
                     <div>

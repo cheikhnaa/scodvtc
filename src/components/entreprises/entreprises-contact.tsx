@@ -22,6 +22,7 @@ type CompanyFormData = z.infer<typeof companySchema>;
 export function EntreprisesContact() {
   const [isSubmitting, setIsSubmitting] = React.useState(false);
   const [isSuccess, setIsSuccess] = React.useState(false);
+  const [submitError, setSubmitError] = React.useState<string | null>(null);
 
   const {
     control,
@@ -42,21 +43,42 @@ export function EntreprisesContact() {
 
   const onSubmit = async (data: CompanyFormData) => {
     setIsSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    console.log("Company registration:", data);
-    setIsSubmitting(false);
-    setIsSuccess(true);
-
-    setTimeout(() => {
-      setIsSuccess(false);
-      reset();
-    }, 3000);
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: "Demande compte entreprise",
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+          message: `Entreprise: ${data.company}\nNINEA: ${data.ninea || "-"}\nNombre de collaborateurs: ${data.employees}`,
+          source: "entreprise",
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(json.error || "Envoi impossible. Réessayez plus tard.");
+        setIsSubmitting(false);
+        return;
+      }
+      setIsSuccess(true);
+      setTimeout(() => {
+        setIsSuccess(false);
+        reset();
+      }, 3000);
+    } catch {
+      setSubmitError("Erreur réseau. Réessayez plus tard.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (isSuccess) {
     return (
       <section id="contact" className="relative overflow-hidden bg-gradient-to-br from-brand-dark via-brand to-brand-hover py-20 lg:py-28">
-        <div className="container px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl px-6 lg:px-8">
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -86,7 +108,7 @@ export function EntreprisesContact() {
         style={{ opacity: 0.025 }}
       />
 
-      <div className="container relative z-10 px-6 lg:px-8">
+      <div className="container relative z-10 mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-3xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -208,7 +230,7 @@ export function EntreprisesContact() {
                         <input
                           type="tel"
                           {...field}
-                          placeholder="+221 77 123 45 67"
+                          placeholder="+221 77 82 23 493"
                           className={cn(
                             "h-[52px] w-full rounded-input border bg-white/10 pl-12 pr-4 font-sans text-base text-white placeholder:text-white/40 backdrop-blur-sm focus:bg-white/15 focus:outline-none focus:ring-4",
                             errors.phone
@@ -286,6 +308,12 @@ export function EntreprisesContact() {
                 )}
               />
             </div>
+
+            {submitError && (
+              <p className="rounded-xl bg-red-500/20 px-4 py-3 font-sans text-sm text-red-200">
+                {submitError}
+              </p>
+            )}
 
             <button
               type="submit"

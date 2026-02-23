@@ -2,12 +2,19 @@
 
 import * as React from "react";
 import { motion } from "framer-motion";
-import { Ruler, Clock4, AlertCircle } from "lucide-react";
+import { Ruler, Clock4, AlertCircle, Plane, Building2, Landmark } from "lucide-react";
 import { cn } from "@/lib/cn";
+import { nominatimReverse } from "@/lib/nominatim";
 import { AddressInput } from "../address-input";
 import { CommanderMap } from "../commander-map";
 import type { ReservationData, AddressValue } from "../reservation-types";
 import { formatFcfa } from "../reservation-types";
+
+const QUICK_DESTINATIONS = [
+  { icon: Plane, label: "Aéroport AIBD", address: "Aéroport International Blaise Diagne, Diass, Sénégal", latitude: 14.7397, longitude: -17.0902 },
+  { icon: Building2, label: "Radisson Blu Dakar", address: "Radisson Blu Hotel Dakar Seaview, Dakar, Sénégal", latitude: 14.7232, longitude: -17.4757 },
+  { icon: Landmark, label: "Plateau Centre-ville", address: "Plateau, Dakar, Sénégal", latitude: 14.6937, longitude: -17.4441 },
+] as const;
 
 interface StepTrajetProps {
   data: ReservationData;
@@ -25,28 +32,28 @@ export function StepTrajet({
   const [isLocating, setIsLocating] = React.useState(false);
 
   const handleMyLocation = React.useCallback(() => {
-    if (!navigator.geolocation || !window.google?.maps) return;
+    if (!navigator.geolocation) return;
     setIsLocating(true);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const geocoder = new google.maps.Geocoder();
-        geocoder.geocode(
-          { location: { lat: pos.coords.latitude, lng: pos.coords.longitude } },
-          (
-            results: google.maps.GeocoderResult[] | null,
-            status: google.maps.GeocoderStatus
-          ) => {
-            setIsLocating(false);
-            if (status === "OK" && results?.[0]) {
-              onPickupChange({
-                address: results[0].formatted_address,
-                placeId: results[0].place_id,
-                latitude: pos.coords.latitude,
-                longitude: pos.coords.longitude,
-              });
-            }
-          }
-        );
+      async (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        try {
+          const result = await nominatimReverse(lat, lng);
+          onPickupChange({
+            address: result?.display_name ?? "Position actuelle",
+            latitude: lat,
+            longitude: lng,
+          });
+        } catch {
+          onPickupChange({
+            address: "Position actuelle",
+            latitude: lat,
+            longitude: lng,
+          });
+        } finally {
+          setIsLocating(false);
+        }
       },
       () => setIsLocating(false),
       { timeout: 10000 }
@@ -90,6 +97,35 @@ export function StepTrajet({
           iconVariant="circle"
           error={errors.dropoff}
         />
+
+        {/* Destinations populaires */}
+        <div>
+          <p className="mb-2 font-sans text-xs font-semibold uppercase tracking-widest text-grey-400">
+            Destinations populaires
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {QUICK_DESTINATIONS.map((dest) => {
+              const Icon = dest.icon;
+              return (
+                <button
+                  key={dest.label}
+                  type="button"
+                  onClick={() =>
+                    onDropoffChange({
+                      address: dest.address,
+                      latitude: dest.latitude,
+                      longitude: dest.longitude,
+                    })
+                  }
+                  className="flex items-center gap-1.5 rounded-pill border border-grey-200 bg-white px-3 py-1.5 font-sans text-sm text-grey-700 transition-all hover:border-accent hover:bg-accent-soft hover:text-brand"
+                >
+                  <Icon className="h-3.5 w-3.5 text-accent" />
+                  {dest.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Map */}

@@ -56,7 +56,7 @@ export function LocationForm() {
 
   return (
     <section className="relative -mt-20 overflow-hidden bg-white py-12">
-      <div className="container px-6 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}

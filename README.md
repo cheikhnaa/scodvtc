@@ -148,11 +148,15 @@ Tables principales :
 - `companies` - Entreprises
 - `reviews` - Avis
 - `driver_applications` - Candidatures chauffeurs
+- `contact_messages` - Messages de contact (assistance + formulaire entreprise)
+
+**Messagerie (contact)** : exécuter la migration `supabase/migrations/001_contact_messages.sql` dans le SQL Editor du projet Supabase pour créer la table des messages. L’API `POST /api/contact` enregistre les messages envoyés depuis les pages Assistance et Entreprises.
 
 ## 🔐 Authentification
 
 Authentification via Supabase Auth avec :
-- OTP SMS (via Twilio)
+- **Création de compte** : inscription avec email + mot de passe (prénom, nom, téléphone en métadonnées). Configurer `NEXT_PUBLIC_SUPABASE_URL` et `NEXT_PUBLIC_SUPABASE_ANON_KEY` ; la clé `SUPABASE_SERVICE_ROLE_KEY` est utilisée par l’API contact.
+- **OTP SMS (inscription)** : pour recevoir le code par SMS sur le numéro saisi, exécuter la migration `supabase/migrations/002_otp_codes.sql` dans Supabase, puis configurer Twilio dans `.env.local` : `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_PHONE_NUMBER` (numéro Twilio au format E.164). Les routes `POST /api/auth/otp/send` et `POST /api/auth/otp/verify` envoient et vérifient le code.
 - Magic link email
 - Session persistante
 
@@ -231,7 +235,7 @@ Propriétaire - SCOD VTC © 2026
 
 - **Email** : contact@scod-vtc.sn
 - **Support** : support@scod-vtc.sn
-- **Téléphone** : +221 77 123 45 67
+- **Téléphone** : +221 77 82 23 493
 # scodvtc
 # scodvtc
 # scodvtc

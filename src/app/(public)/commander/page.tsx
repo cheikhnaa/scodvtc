@@ -8,49 +8,6 @@ import { CommanderForm } from "@/components/booking/commander-form";
 import { CommanderMap } from "@/components/booking/commander-map";
 import type { AddressValue } from "@/components/booking/address-input";
 
-// ─── Google Maps Loader ────────────────────────────────────────────────────
-
-function useMapsLoader() {
-  const [loaded, setLoaded] = React.useState(false);
-
-  React.useEffect(() => {
-    if (window.google?.maps) {
-      setLoaded(true);
-      return;
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_KEY;
-    if (!apiKey || apiKey === "your_google_maps_api_key") {
-      // Signaler à la carte que l'API ne sera pas chargée (évite un chargement infini)
-      setLoaded(true);
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("google-maps-unavailable"));
-      }
-      return;
-    }
-
-    const existingScript = document.getElementById("google-maps-script");
-    if (existingScript) return;
-
-    const script = document.createElement("script");
-    script.id = "google-maps-script";
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&language=fr&region=SN`;
-    script.async = true;
-    script.defer = true;
-    script.onload = () => {
-      setLoaded(true);
-      window.dispatchEvent(new Event("google-maps-loaded"));
-    };
-    script.onerror = () => {
-      setLoaded(true);
-      window.dispatchEvent(new Event("google-maps-unavailable"));
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  return loaded;
-}
-
 // ─── Bottom sheet states (mobile) ─────────────────────────────────────────
 
 type SheetState = "collapsed" | "half" | "expanded";
@@ -64,8 +21,6 @@ const SHEET_HEIGHTS: Record<SheetState, string> = {
 // ─── Page Component ────────────────────────────────────────────────────────
 
 export default function CommanderPage() {
-  useMapsLoader();
-
   const [pickup, setPickup] = React.useState<AddressValue>({ address: "" });
   const [dropoff, setDropoff] = React.useState<AddressValue>({ address: "" });
   const [sheetState, setSheetState] = React.useState<SheetState>("half");
@@ -103,12 +58,12 @@ export default function CommanderPage() {
     });
   };
 
-  // ── Desktop : split screen layout ───────────────────────────────────────
+  // ── Desktop : split screen layout (form devant, carte derrière) ───────────
   if (!isMobile) {
     return (
       <div className="flex h-screen w-full overflow-hidden pt-[68px]">
-        {/* Left panel — form */}
-        <div className="relative z-10 flex h-full w-[55%] flex-col overflow-y-auto border-r border-grey-100 bg-white shadow-2xl">
+        {/* Left panel — formulaire (z-10 pour rester au premier plan) */}
+        <div className="relative z-10 flex h-full w-[55%] min-w-0 flex-col overflow-y-auto border-r border-grey-100 bg-white shadow-2xl">
           <div className="flex-1 px-10 py-10 xl:px-14 xl:py-12">
             <CommanderForm
               onPickupChange={handlePickupChange}
@@ -117,8 +72,8 @@ export default function CommanderPage() {
           </div>
         </div>
 
-        {/* Right panel — map */}
-        <div className="relative h-full flex-1 bg-[#0d1117]">
+        {/* Right panel — carte (z-0 pour rester derrière les infos) */}
+        <div className="relative z-0 h-full flex-1 min-w-0 isolate bg-[#0d1117]">
           <CommanderMap pickup={pickup} dropoff={dropoff} className="h-full" />
 
           {/* Empty state hint */}
@@ -146,20 +101,21 @@ export default function CommanderPage() {
     );
   }
 
-  // ── Mobile : map background + bottom sheet ───────────────────────────────
+  // ── Mobile : carte en arrière-plan, formulaire au premier plan ────────────
   return (
     <div className="relative h-screen w-full overflow-hidden pt-[68px]">
-      {/* Map — full screen background */}
-      <div className="absolute inset-0 top-[68px]">
+      {/* Carte en arrière-plan (z-0 + isolate pour contenir les z-index Leaflet) */}
+      <div className="absolute inset-0 top-[68px] z-0 isolate">
         <CommanderMap pickup={pickup} dropoff={dropoff} className="h-full" />
       </div>
 
       {/* Gradient fade at bottom for readability */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-48 bg-gradient-to-t from-white/10 to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-[999] h-48 bg-gradient-to-t from-white/10 to-transparent" />
 
-      {/* Bottom sheet */}
+      {/* Formulaire (bottom sheet au-dessus de la carte) */}
       <motion.div
-        className="absolute bottom-0 left-0 right-0 z-20 overflow-hidden rounded-t-[24px] bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.2)]"
+        className="absolute bottom-0 left-0 right-0 z-[1000] overflow-hidden rounded-t-[24px] bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.2)]"
+        initial={{ height: SHEET_HEIGHTS[sheetState] }}
         animate={{ height: SHEET_HEIGHTS[sheetState] }}
         transition={{ type: "spring", damping: 30, stiffness: 300 }}
         drag="y"

@@ -22,7 +22,7 @@ export default function TrajetsProPage() {
       
       {/* How it works section */}
       <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-        <div className="container px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-sans text-sm font-bold uppercase tracking-widest text-accent">
               Comment ça marche
@@ -70,7 +70,7 @@ export default function TrajetsProPage() {
 
       {/* Pricing section */}
       <section className="relative overflow-hidden bg-grey-50 py-20 lg:py-28">
-        <div className="container px-6 lg:px-8">
+        <div className="container mx-auto max-w-7xl px-6 lg:px-8">
           <div className="mx-auto max-w-3xl text-center">
             <p className="font-sans text-sm font-bold uppercase tracking-widest text-accent">
               Tarification entreprise

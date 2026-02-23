@@ -21,15 +21,15 @@ export default function MentionsLegalesPage() {
         <li><strong>Siège social :</strong> Dakar, Plateau, Sénégal</li>
         <li><strong>NINEA :</strong> 00X-XXXX-X (numéro d'identification nationale des entreprises et associations)</li>
         <li><strong>RCCM :</strong> SN-DKR-20XX-B-XXXXX (Registre du Commerce et du Crédit Mobilier)</li>
-        <li><strong>Téléphone :</strong> +221 77 123 45 67</li>
-        <li><strong>Email :</strong> <a href="mailto:contact@scodvtc.sn">contact@scodvtc.sn</a></li>
+        <li><strong>Téléphone :</strong> +221 77 82 23 493</li>
+        <li><strong>Email :</strong> <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a></li>
       </ul>
 
       <h2>2. Directeur de la publication</h2>
       <p>
         Le directeur de la publication du site <strong>scodvtc.sn</strong> est :<br />
         <strong>Ousmane Diallo</strong>, Co-fondateur et Directeur Général de SCOD VTC.<br />
-        Email : <a href="mailto:direction@scodvtc.sn">direction@scodvtc.sn</a>
+        Email : <a href="mailto:direction@scodvtc.com">direction@scodvtc.com</a>
       </p>
 
       <h2>3. Hébergeur</h2>
@@ -85,7 +85,7 @@ export default function MentionsLegalesPage() {
       </p>
       <p>
         Toute demande d'autorisation pour établir un lien hypertexte vers le site scodvtc.sn doit
-        être adressée à <a href="mailto:contact@scodvtc.sn">contact@scodvtc.sn</a>.
+        être adressée à <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a>.
       </p>
 
       <h2>7. Limitation de responsabilité</h2>
@@ -122,10 +122,10 @@ export default function MentionsLegalesPage() {
       <h2>10. Contact</h2>
       <p>Pour toute question relative au site ou à nos services :</p>
       <ul>
-        <li><strong>Email général :</strong> <a href="mailto:contact@scodvtc.sn">contact@scodvtc.sn</a></li>
-        <li><strong>Email DPO (données personnelles) :</strong> <a href="mailto:privacy@scodvtc.sn">privacy@scodvtc.sn</a></li>
-        <li><strong>Téléphone :</strong> +221 77 123 45 67</li>
-        <li><strong>WhatsApp :</strong> <a href="https://wa.me/221771234567" target="_blank" rel="noopener">wa.me/221771234567</a></li>
+        <li><strong>Email général :</strong> <a href="mailto:contact@scodvtc.com">contact@scodvtc.com</a></li>
+        <li><strong>Email DPO (données personnelles) :</strong> <a href="mailto:privacy@scodvtc.com">privacy@scodvtc.com</a></li>
+        <li><strong>Téléphone :</strong> +221 77 82 23 493</li>
+        <li><strong>WhatsApp :</strong> <a href="https://wa.me/221778223493" target="_blank" rel="noopener">wa.me/221778223493</a></li>
         <li><strong>Adresse :</strong> SCOD VTC, Dakar Plateau, Sénégal</li>
       </ul>
 

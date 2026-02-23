@@ -116,7 +116,7 @@ const faqData: FAQItem[] = [
       <div className="space-y-3">
         <Block>
           <ItemRow icon={Laptop} label="En ligne — estimation immédiate" sub="Saisissez votre trajet sur scod-vtc.sn → tarif affiché en FCFA" />
-          <ItemRow icon={Phone} label="Par téléphone" sub="+221 77 123 45 67 — devis en moins de 2 minutes" />
+          <ItemRow icon={Phone} label="Par téléphone" sub="+221 77 82 23 493 — devis en moins de 2 minutes" />
           <ItemRow icon={MessageCircle} label="Via WhatsApp" sub="Envoyez départ + arrivée → tarif instantané" last />
         </Block>
         <Block>
@@ -338,7 +338,7 @@ export function ContactFAQ({ className }: { className?: string }) {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <a
-                href="https://wa.me/221771234567"
+                href="https://wa.me/221778223493"
                 target="_blank"
                 rel="noopener noreferrer"
                 className={cn(
@@ -351,7 +351,7 @@ export function ContactFAQ({ className }: { className?: string }) {
                 WhatsApp
               </a>
               <a
-                href="tel:+221771234567"
+                href="tel:+221778223493"
                 className={cn(
                   "flex items-center justify-center gap-2 rounded-xl border-2 border-grey-900 bg-transparent px-4 py-3",
                   "font-sans text-[14px] font-semibold text-grey-900 transition-all duration-200",

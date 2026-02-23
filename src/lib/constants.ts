@@ -11,9 +11,9 @@ export const APP_DESCRIPTION =
  * Business constants
  */
 export const CONTACT = {
-  phone: "+221 77 123 45 67",
-  email: "contact@scod-vtc.sn",
-  support: "support@scod-vtc.sn",
+  phone: "+221 77 82 23 493",
+  email: "contact@scodvtc.com",
+  support: "support@scodvtc.com",
   address: "Dakar, Sénégal",
 } as const;
 

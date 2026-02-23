@@ -68,7 +68,7 @@ const SUPPLEMENTS = [
 export function AirportIncluded() {
   return (
     <section className="relative overflow-hidden bg-white py-20 lg:py-28">
-      <div className="container px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <motion.p

@@ -64,20 +64,51 @@ export default function ReservationClientPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [currentStep, setCurrentStep] = React.useState(0);
-  const [direction, setDirection] = React.useState(0);
-  const [data, setData] = React.useState<ReservationData>(() => {
-    // Pre-fill from query params if coming from /commander
-    const pickup = searchParams.get("pickup");
-    const dropoff = searchParams.get("dropoff");
+  // Pré-remplir depuis /commander et décider de l’étape initiale (éviter de répéter le trajet)
+  const initial = React.useMemo(() => {
+    const pickupAddr = searchParams.get("pickup");
+    const dropoffAddr = searchParams.get("dropoff");
     const vehicle = searchParams.get("vehicle") as VehicleClass | null;
+    const schedule = searchParams.get("schedule");
+    const date = searchParams.get("date");
+    const time = searchParams.get("time");
+    const pickupLat = searchParams.get("pickup_lat");
+    const pickupLng = searchParams.get("pickup_lng");
+    const dropoffLat = searchParams.get("dropoff_lat");
+    const dropoffLng = searchParams.get("dropoff_lng");
+
+    const pickup: AddressValue = pickupAddr
+      ? {
+          address: pickupAddr,
+          ...(pickupLat != null && pickupLng != null && { latitude: Number(pickupLat), longitude: Number(pickupLng) }),
+        }
+      : DEFAULT_RESERVATION.pickup;
+    const dropoff: AddressValue = dropoffAddr
+      ? {
+          address: dropoffAddr,
+          ...(dropoffLat != null && dropoffLng != null && { latitude: Number(dropoffLat), longitude: Number(dropoffLng) }),
+        }
+      : DEFAULT_RESERVATION.dropoff;
+
+    const isEarliest = schedule === "now" || !schedule;
+
     return {
-      ...DEFAULT_RESERVATION,
-      pickup: pickup ? { address: pickup } : DEFAULT_RESERVATION.pickup,
-      dropoff: dropoff ? { address: dropoff } : DEFAULT_RESERVATION.dropoff,
-      vehicleClass: vehicle || DEFAULT_RESERVATION.vehicleClass,
+      data: {
+        ...DEFAULT_RESERVATION,
+        pickup,
+        dropoff,
+        vehicleClass: vehicle || DEFAULT_RESERVATION.vehicleClass,
+        date: date || DEFAULT_RESERVATION.date,
+        time: time || DEFAULT_RESERVATION.time,
+        isEarliest,
+      } as ReservationData,
+      startStep: searchParams.get("from_commander") === "1" && pickupAddr && dropoffAddr ? 1 : 0,
     };
-  });
+  }, [searchParams]);
+
+  const [currentStep, setCurrentStep] = React.useState(initial.startStep);
+  const [direction, setDirection] = React.useState(0);
+  const [data, setData] = React.useState<ReservationData>(initial.data);
 
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const [isProcessing, setIsProcessing] = React.useState(false);

@@ -3,12 +3,18 @@
 import * as React from "react";
 import { MapPin, Loader2, Navigation } from "lucide-react";
 import { cn } from "@/lib/cn";
+import {
+  nominatimSearch,
+  type NominatimSearchResult,
+} from "@/lib/nominatim";
 
 export interface PlacePrediction {
   placeId: string;
   mainText: string;
   secondaryText: string;
   description: string;
+  latitude: number;
+  longitude: number;
 }
 
 export interface AddressValue {
@@ -31,6 +37,19 @@ interface AddressInputProps {
   className?: string;
 }
 
+function nominatimToPrediction(r: NominatimSearchResult): PlacePrediction {
+  const main = r.address?.road ?? r.address?.suburb ?? r.address?.city ?? r.address?.town ?? r.display_name.split(",")[0] ?? "";
+  const secondary = [r.address?.city, r.address?.state, r.address?.country].filter(Boolean).join(", ");
+  return {
+    placeId: String(r.place_id),
+    mainText: main,
+    secondaryText: secondary,
+    description: r.display_name,
+    latitude: Number(r.lat),
+    longitude: Number(r.lon),
+  };
+}
+
 export function AddressInput({
   label,
   placeholder,
@@ -50,36 +69,11 @@ export function AddressInput({
   const inputRef = React.useRef<HTMLInputElement>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
-  const autocompleteServiceRef =
-    React.useRef<google.maps.places.AutocompleteService | null>(null);
-  const geocoderRef = React.useRef<google.maps.Geocoder | null>(null);
 
-  // Sync external value → local query
   React.useEffect(() => {
     setQuery(value.address);
   }, [value.address]);
 
-  // Init Google Maps services once Maps API is loaded
-  React.useEffect(() => {
-    const init = () => {
-      if (
-        window.google?.maps?.places &&
-        !autocompleteServiceRef.current
-      ) {
-        autocompleteServiceRef.current =
-          new google.maps.places.AutocompleteService();
-        geocoderRef.current = new google.maps.Geocoder();
-      }
-    };
-    if (window.google?.maps) {
-      init();
-    } else {
-      window.addEventListener("google-maps-loaded", init);
-      return () => window.removeEventListener("google-maps-loaded", init);
-    }
-  }, []);
-
-  // Close dropdown on outside click
   React.useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (
@@ -94,45 +88,27 @@ export function AddressInput({
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  const fetchPredictions = (input: string) => {
-    if (!autocompleteServiceRef.current || input.trim().length < 3) {
+  const fetchPredictions = React.useCallback(async (input: string) => {
+    if (input.trim().length < 3) {
       setPredictions([]);
       setShowDropdown(false);
       return;
     }
-
     setIsLoading(true);
-    autocompleteServiceRef.current.getPlacePredictions(
-      {
-        input,
-        componentRestrictions: { country: "sn" },
-        types: ["geocode", "establishment"],
-      },
-      (
-        results: google.maps.places.AutocompletePrediction[] | null,
-        status: google.maps.places.PlacesServiceStatus
-      ) => {
-        setIsLoading(false);
-        if (
-          status === google.maps.places.PlacesServiceStatus.OK &&
-          results
-        ) {
-          setPredictions(
-            results.map((r) => ({
-              placeId: r.place_id,
-              mainText: r.structured_formatting.main_text,
-              secondaryText: r.structured_formatting.secondary_text ?? "",
-              description: r.description,
-            }))
-          );
-          setShowDropdown(true);
-        } else {
-          setPredictions([]);
-          setShowDropdown(false);
-        }
-      }
-    );
-  };
+    try {
+      const results = await nominatimSearch(input.trim(), {
+        countryCodes: "sn",
+        limit: 5,
+      });
+      setPredictions(results.map(nominatimToPrediction));
+      setShowDropdown(results.length > 0);
+    } catch {
+      setPredictions([]);
+      setShowDropdown(false);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -140,38 +116,19 @@ export function AddressInput({
     onChange({ address: val });
 
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => fetchPredictions(val), 300);
+    debounceRef.current = setTimeout(() => fetchPredictions(val), 400);
   };
 
-  const handleSelectPrediction = async (prediction: PlacePrediction) => {
+  const handleSelectPrediction = (prediction: PlacePrediction) => {
     setQuery(prediction.description);
     setShowDropdown(false);
     setPredictions([]);
-
-    if (!geocoderRef.current) {
-      onChange({ address: prediction.description, placeId: prediction.placeId });
-      return;
-    }
-
-    geocoderRef.current.geocode(
-      { placeId: prediction.placeId },
-      (
-        results: google.maps.GeocoderResult[] | null,
-        status: google.maps.GeocoderStatus
-      ) => {
-        if (status === "OK" && results?.[0]) {
-          const loc = results[0].geometry.location;
-          onChange({
-            address: prediction.description,
-            placeId: prediction.placeId,
-            latitude: loc.lat(),
-            longitude: loc.lng(),
-          });
-        } else {
-          onChange({ address: prediction.description, placeId: prediction.placeId });
-        }
-      }
-    );
+    onChange({
+      address: prediction.description,
+      placeId: prediction.placeId,
+      latitude: prediction.latitude,
+      longitude: prediction.longitude,
+    });
   };
 
   return (
@@ -183,7 +140,6 @@ export function AddressInput({
       )}
 
       <div className="relative flex items-center">
-        {/* Icon */}
         <div className="pointer-events-none absolute left-4 z-10">
           {iconVariant === "pin" ? (
             <MapPin className="h-5 w-5 text-accent" />
@@ -211,7 +167,6 @@ export function AddressInput({
           autoComplete="off"
         />
 
-        {/* My Location button */}
         {showMyLocation && (
           <button
             type="button"
@@ -228,7 +183,6 @@ export function AddressInput({
           </button>
         )}
 
-        {/* Loading indicator */}
         {isLoading && !showMyLocation && (
           <div className="absolute right-4">
             <Loader2 className="h-4 w-4 animate-spin text-grey-400" />
@@ -236,12 +190,10 @@ export function AddressInput({
         )}
       </div>
 
-      {/* Error */}
       {error && (
         <p className="mt-1 font-sans text-sm text-error">{error}</p>
       )}
 
-      {/* Dropdown */}
       {showDropdown && predictions.length > 0 && (
         <div
           ref={dropdownRef}

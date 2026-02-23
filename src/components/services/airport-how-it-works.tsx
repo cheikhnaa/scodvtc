@@ -46,7 +46,7 @@ const STEPS: Step[] = [
 export function AirportHowItWorks() {
   return (
     <section className="relative overflow-hidden bg-grey-50 py-20 lg:py-28">
-      <div className="container px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
         {/* Header */}
         <div className="mx-auto max-w-3xl text-center">
           <motion.p
@@ -163,14 +163,14 @@ export function AirportHowItWorks() {
           </p>
           <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
             <a
-              href="tel:+221771234567"
+              href="tel:+221778223493"
               className="font-sans text-base font-bold text-brand hover:underline"
             >
-              +221 77 123 45 67
+              +221 77 82 23 493
             </a>
             <span className="text-grey-300">|</span>
             <a
-              href="https://wa.me/221771234567"
+              href="https://wa.me/221778223493"
               target="_blank"
               rel="noopener noreferrer"
               className="font-sans text-base font-bold text-accent hover:underline"

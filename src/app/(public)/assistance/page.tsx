@@ -35,22 +35,22 @@ const contactCards = [
   {
     icon: Phone,
     title: "Téléphone",
-    value: "+221 77 123 45 67",
+    value: "+221 77 82 23 493",
     badge: "Réponse immédiate",
     badgeColor: "bg-green-500/15 text-green-400",
     cta: "Appeler",
-    href: "tel:+221771234567",
+    href: "tel:+221778223493",
     color: "text-blue-400",
     bg: "bg-blue-400/10",
   },
   {
     icon: MessageCircle,
     title: "WhatsApp",
-    value: "+221 77 123 45 67",
+    value: "+221 77 82 23 493",
     badge: "Réponse < 5 min",
     badgeColor: "bg-green-500/15 text-green-400",
     cta: "Écrire sur WhatsApp",
-    href: "https://wa.me/221771234567",
+    href: "https://wa.me/221778223493",
     color: "text-[#25D366]",
     bg: "bg-[#25D366]/10",
     external: true,
@@ -58,11 +58,11 @@ const contactCards = [
   {
     icon: Mail,
     title: "Email",
-    value: "contact@scodvtc.sn",
+    value: "contact@scodvtc.com",
     badge: "Réponse < 2h",
     badgeColor: "bg-amber-500/15 text-amber-400",
     cta: "Envoyer un email",
-    href: "mailto:contact@scodvtc.sn",
+    href: "mailto:contact@scodvtc.com",
     color: "text-violet-400",
     bg: "bg-violet-400/10",
   },
@@ -104,12 +104,12 @@ const quickFAQ = [
   {
     id: "q2",
     question: "Mon chauffeur est en retard, que faire ?",
-    answer: "Consultez votre SMS de confirmation pour le numéro direct du chauffeur. Vous pouvez aussi l'appeler via notre service client au +221 77 123 45 67.",
+    answer: "Consultez votre SMS de confirmation pour le numéro direct du chauffeur. Vous pouvez aussi l'appeler via notre service client au +221 77 82 23 493.",
   },
   {
     id: "q3",
     question: "Comment obtenir une facture pour mon entreprise ?",
-    answer: "Les factures sont disponibles dans Mon compte → Historique. Pour la facturation mensuelle Wave Business, contactez-nous à contact@scodvtc.sn.",
+    answer: "Les factures sont disponibles dans Mon compte → Historique. Pour la facturation mensuelle Wave Business, contactez-nous à contact@scodvtc.com.",
   },
 ];
 
@@ -139,15 +139,37 @@ const fadeUp = (delay = 0) => ({
 
 export default function AssistancePage() {
   const [sent, setSent]         = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
   const [openFAQ, setOpenFAQ]   = useState<string | undefined>(undefined);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (_data: FormData) => {
-    await new Promise((r) => setTimeout(r, 1000));
-    setSent(true);
+  const onSubmit = async (data: FormData) => {
+    setSubmitError(null);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          subject: data.subject,
+          name: data.name,
+          email: data.email,
+          phone: data.phone || undefined,
+          message: data.message,
+          source: "assistance",
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setSubmitError(json.error || "Envoi impossible. Réessayez plus tard.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setSubmitError("Erreur réseau. Réessayez plus tard.");
+    }
   };
 
   /* shared input classes */
@@ -288,7 +310,7 @@ export default function AssistancePage() {
                       Nous vous répondons sous 2h. Vérifiez vos emails, y compris votre dossier spam.
                     </p>
                     <button
-                      onClick={() => setSent(false)}
+                      onClick={() => { setSent(false); setSubmitError(null); }}
                       className="mt-2 text-[13px] font-medium text-accent hover:underline underline-offset-4"
                     >
                       Envoyer un autre message
@@ -384,6 +406,12 @@ export default function AssistancePage() {
                         <p className="mt-1 text-[12px] text-red-500">{errors.message.message}</p>
                       )}
                     </div>
+
+                    {submitError && (
+                      <p className="rounded-xl bg-red-50 px-4 py-3 text-[13px] text-red-600">
+                        {submitError}
+                      </p>
+                    )}
 
                     {/* Submit */}
                     <button

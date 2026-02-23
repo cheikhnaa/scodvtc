@@ -78,13 +78,6 @@ export function EntreprisesHero({ bgImage = "/cars/header-hero/transport-profess
               <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
 
-            <a
-              href="#offres"
-              className="flex items-center gap-2 rounded-btn border-2 border-white/20 bg-white/5 px-8 py-4 font-sans text-base font-bold text-white backdrop-blur-sm transition-all hover:border-white/40 hover:bg-white/10"
-            >
-              Découvrir l&apos;offre
-              <ChevronDown className="h-5 w-5" />
-            </a>
           </motion.div>
 
           {/* Trust metrics */}
